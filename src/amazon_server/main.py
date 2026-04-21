@@ -46,9 +46,7 @@ def key_validation(api_key: str = Header("API-Key")):
 
 @app.post("/webhook")
 def upload_forms_data(cv: FormsCV, key: str = Depends(key_validation)):
-    content = cv.cv_content
-    cv_pdf = base64.b64decode(content)
-    crud.add_forms(cv.email, cv.cv_name, cv_pdf)
+    crud.add_forms(cv.email, cv.cv_name, cv.cv_content)
     print("SUCCESS! CV was added to database.")
     return {"response": "Successfully added cv to database"}
 
@@ -56,7 +54,7 @@ def upload_forms_data(cv: FormsCV, key: str = Depends(key_validation)):
 def get_waiting_cv(key: str = Depends(key_validation)):
     data = crud.give_waiting()
     if not data:
-        return {"message": "No CV waiting for process" }
+        raise HTTPException(status_code=404, detail="CV nie znalezione")
     return data
 
 
