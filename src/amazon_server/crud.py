@@ -29,7 +29,7 @@ def read_database():
         conn = database.get_connection()
         cursor = conn.cursor()
         cursor.execute('''
-                       SELECT CV.id, email, cv_name, status_id FROM CV 
+                       SELECT CV.id, email, cv_name, status FROM CV 
                         INNER JOIN Statuses
                         on CV.status_id = Statuses.id
                        ''')
