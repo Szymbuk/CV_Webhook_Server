@@ -1,9 +1,13 @@
 import sqlite3
+
+from dotenv import load_dotenv
 from fastapi import HTTPException
+import os
 import database
 
 
-def add_forms(email,cv_name,cv_file):
+
+def add_row(email,cv_name,cv_file):
     try:
         conn = database.get_connection()
         cursor = conn.cursor()
@@ -17,8 +21,7 @@ def add_forms(email,cv_name,cv_file):
 
     except sqlite3.Error as e:
         print(f"Database error {e}")
-        HTTPException(status_code=500, detail="Database connection error")
-
+        raise e
     finally:
         if conn:
             conn.close()
@@ -37,7 +40,7 @@ def read_database():
         print(f"Database records:\n {data}")
     except sqlite3.Error as e:
         print(f"Database error {e}")
-        HTTPException(status_code=500, detail="Database connection error")
+        raise e
     finally:
         if conn:
             conn.close()
@@ -64,7 +67,7 @@ def give_waiting():
         conn.commit()
     except sqlite3.Error as e:
         print(f"Database error{e}")
-        raise HTTPException(status_code=500, detail="Database connection error")
+        raise e
     finally:
         if conn:
             conn.close()
@@ -83,7 +86,7 @@ def delete_sent():
         conn.commit()
     except sqlite3.Error as e:
         print(f"Database error{e}")
-        raise HTTPException(status_code=500, detail="Database connection error")
+        raise e
     finally:
         if conn:
             conn.close()

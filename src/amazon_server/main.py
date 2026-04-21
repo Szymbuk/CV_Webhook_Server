@@ -1,4 +1,4 @@
-import base64
+
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Header
@@ -60,7 +60,7 @@ def get_waiting_cv(key: str = Depends(key_validation)):
 
 @app.post("/delete-given")
 def delete_sent_cv(key: str = Depends(key_validation)):
-    crud.delete()
+    crud.delete_sent()
     return {"response": "Successfully deleted sent cv's"}
 
 

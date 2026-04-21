@@ -16,7 +16,7 @@ def create_tables():
         conn = get_connection()
         cursor = conn.cursor()
 
-        # creating reference table for statuses
+        # creating a reference table for statuses
         cursor.execute('''
                        CREATE TABLE IF NOT EXISTS Statuses
                        (
@@ -25,7 +25,7 @@ def create_tables():
                        )
                        ''')
 
-        # creating main table for cv's
+        # creating the main table for cv's
         cursor.execute('''
                        CREATE TABLE IF NOT EXISTS CV
                        (
@@ -37,7 +37,7 @@ def create_tables():
                         )
                         ''')
 
-        # inserting values to satuses table
+        # inserting values to a statuses table
         cursor.execute('''
                        INSERT OR IGNORE INTO Statuses (status)
                        VALUES ('waiting')
