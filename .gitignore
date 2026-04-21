@@ -135,7 +135,7 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-src/.env
+src/amazon_server/.env
 .envrc
 .venv
 env/
@@ -206,4 +206,4 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
-src/database.db
+src/amazon_server/database.db
