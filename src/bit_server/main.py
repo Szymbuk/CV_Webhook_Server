@@ -38,3 +38,4 @@ def fetch_waiting_cv():
 if __name__ == "__main__":
     create_database()
     fetch_waiting_cv()
+    crud.read_database()
