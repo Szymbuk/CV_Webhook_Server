@@ -1,18 +1,12 @@
-
 from contextlib import asynccontextmanager
-
 from fastapi import FastAPI, HTTPException, Header
-#from fastapi.security import APIKeyHeader
 from fastapi.params import Depends
-
 from dotenv import load_dotenv
-
 import os
 
 import crud
 from schemas import FormsCV
 import database
-
 
 
 @asynccontextmanager
@@ -29,9 +23,6 @@ app = FastAPI(lifespan=lifespan)
 load_dotenv()
 API_KEY_DEBUG = os.getenv("API_KEY_DEBUG")
 API_KEY = os.getenv("API_KEY")
-
-#api_key_header_webhook = APIKeyHeader(name="API-Key")
-#api_key_header_get_cv = APIKeyHeader(name="API-Key")
 
 def key_validation_debug(api_key: str = Header("API-Key")):
     if api_key != API_KEY_DEBUG:
@@ -54,15 +45,20 @@ def upload_forms_data(cv: FormsCV, key: str = Depends(key_validation)):
 def get_waiting_cv(key: str = Depends(key_validation)):
     data = crud.give_waiting()
     if not data:
-        raise HTTPException(status_code=404, detail="CV nie znalezione")
+        return {"response": "no CV found"}
     return data
 
 
 @app.post("/delete-given")
 def delete_sent_cv(key: str = Depends(key_validation)):
     crud.delete_sent()
-    return {"response": "Successfully deleted sent cv's"}
+    return {"response": "Successfully deleted sent CVs"}
 
+
+@app.post("/change-waiting")
+def change_set_to_waiting(key: str = Depends(key_validation)):
+    crud.change_to_waiting()
+    return {"response": "Successfully changed sent CVs to waiting"}
 
 
 @app.get("/print-data")

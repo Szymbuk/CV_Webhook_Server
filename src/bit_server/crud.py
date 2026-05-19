@@ -1,11 +1,5 @@
 import sqlite3
-
-from dotenv import load_dotenv
-from fastapi import HTTPException
-import os
 import database
-
-
 
 def add_row(email,cv_name,cv_file):
     try:
@@ -91,3 +85,19 @@ def delete_sent():
         if conn:
             conn.close()
 
+def change_to_waiting():
+    try:
+        conn = database.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+                        UPDATE CV
+                        SET status_id = (SELECT id FROM Statuses WHERE status = 'waiting')
+                        where status_id = (SELECT id FROM Statuses WHERE status = 'set')
+        ''')
+        conn.commit()
+    except sqlite3.Error as e:
+        print(f"Database error{e}")
+        raise e
+    finally:
+        if conn:
+            conn.close()

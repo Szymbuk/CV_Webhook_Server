@@ -88,3 +88,20 @@ def delete_sent():
         if conn:
             conn.close()
 
+
+def change_to_waiting():
+    try:
+        conn = database.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+                        UPDATE CV
+                        SET status_id = (SELECT id FROM Statuses WHERE status = 'waiting')
+                        where status_id = (SELECT id FROM Statuses WHERE status = 'set')
+        ''')
+        conn.commit()
+    except sqlite3.Error as e:
+        print(f"Database error{e}")
+        raise HTTPException(status_code=500, detail="Database connection error")
+    finally:
+        if conn:
+            conn.close()

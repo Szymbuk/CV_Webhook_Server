@@ -25,7 +25,7 @@ def create_tables():
                        )
                        ''')
 
-        # creating the main table for cv's
+        # creating the main table for the CVs
         cursor.execute('''
                        CREATE TABLE IF NOT EXISTS CV
                        (
