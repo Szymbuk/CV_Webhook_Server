@@ -12,6 +12,7 @@ def get_connection():
     return conn
 
 def create_tables():
+    db_exists = os.path.exists(DATABASE_NAME)
     try:
         conn = get_connection()
         cursor = conn.cursor()
@@ -61,4 +62,5 @@ def create_tables():
     finally:
         if conn:
             conn.close()
-    print("database and tables created,")
+    if not db_exists:
+        print("database and tables created,")
