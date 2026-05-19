@@ -21,7 +21,7 @@ def fetch_waiting_cv():
     if result.status_code == 200:
         data = result.json()
         if data == {"response": "no CV found"}:
-            print("There are no new CVs to be saved")
+            print("There are no new CVs to be saved.",end="\t")
         else:
             try:
                 for response in data:
