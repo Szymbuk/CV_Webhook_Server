@@ -34,7 +34,6 @@ def read_database():
                         on CV.status_id = Statuses.id
                        ''')
         data = [dict(row)  for row in cursor.fetchall()]
-        print(f"Database records:\n {data}")
     except sqlite3.Error as e:
         print(f"Database error {e}")
         HTTPException(status_code=500, detail="Database connection error")
@@ -68,7 +67,6 @@ def give_waiting():
     finally:
         if conn:
             conn.close()
-    print(data)
     return data
 
 

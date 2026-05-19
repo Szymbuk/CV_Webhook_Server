@@ -38,12 +38,13 @@ def key_validation(api_key: str = Header("API-Key")):
 @app.post("/webhook")
 def upload_forms_data(cv: FormsCV, key: str = Depends(key_validation)):
     crud.add_forms(cv.email, cv.cv_name, cv.cv_content)
-    print("SUCCESS! CV was added to database.")
+    print("CV was added to database.")
     return {"response": "Successfully added cv to database"}
 
 @app.get("/waiting-cv")
 def get_waiting_cv(key: str = Depends(key_validation)):
     data = crud.give_waiting()
+    print(data)
     if not data:
         return {"response": "no CV found"}
     return data
@@ -52,15 +53,19 @@ def get_waiting_cv(key: str = Depends(key_validation)):
 @app.post("/delete-given")
 def delete_sent_cv(key: str = Depends(key_validation)):
     crud.delete_sent()
+    print("Deleted sent CVs.")
     return {"response": "Successfully deleted sent CVs"}
 
 
 @app.post("/change-waiting")
 def change_set_to_waiting(key: str = Depends(key_validation)):
     crud.change_to_waiting()
+    print("Changed CV's to waiting.")
     return {"response": "Successfully changed sent CVs to waiting"}
 
 
 @app.get("/print-data")
 def print_database(key: str = Depends(key_validation_debug)):
-    return crud.read_database()
+    data =  crud.read_database()
+    print(f"Database records:\n {data}")
+    return data
