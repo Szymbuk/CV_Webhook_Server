@@ -116,7 +116,7 @@ def change_to_waiting():
 from sqlmodel import Session, create_engine, SQLModel,select,col,update,delete
 import os
 from dotenv import load_dotenv
-from src.amazon_server.schemas import BaseCV,Statuses,DatabaseCV
+from schemas import BaseCV,Statuses,DatabaseCV
 
 load_dotenv()
 DATABASE_NAME = os.getenv("DATABASE")
