@@ -185,7 +185,9 @@ def read_database_new():
     with Session(engine) as session:
         statement = select(DatabaseCV,Statuses).join(Statuses)
         data = session.exec(statement).all()
-        return data
+        formatted_data = [{"cv": cv, "status": status} for cv, status in data]
+
+        return formatted_data
 
 
 
