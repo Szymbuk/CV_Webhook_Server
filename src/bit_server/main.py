@@ -21,7 +21,7 @@ def fetch_waiting_cv():
     if result.status_code == 200:
         data = result.json()
         if data == {"response": "no CV found"}:
-            print("There are no new CVs to be saved")
+            print("There are no new CVs to be saved.",end="\t")
         else:
             try:
                 for response in data:
@@ -29,12 +29,13 @@ def fetch_waiting_cv():
                 requests.post(f"{EC2_URL}delete-given",headers=headers)
             except sqlite3.Error as e:
 
-                print("Database Error")
-                print(e)
+                print("Database Error",end="\t")
+                print(e,end="\t")
                 requests.post(f"{EC2_URL}change-waiting")
     else:
-        print(f"Failed to connect to the server: {result.status_code}")
+        print(f"Failed to connect to the server: {result.status_code}",end="\t")
 
 if __name__ == "__main__":
     create_database()
     fetch_waiting_cv()
+    crud.read_database()

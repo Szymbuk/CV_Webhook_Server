@@ -31,7 +31,7 @@ def read_database():
                         on CV.status_id = Statuses.id
                        ''')
         data = [dict(row)  for row in cursor.fetchall()]
-        print(f"Database records:\n {data}")
+        print(f"Database records: {data}")
     except sqlite3.Error as e:
         print(f"Database error {e}")
         raise e
