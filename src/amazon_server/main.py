@@ -5,8 +5,8 @@ from dotenv import load_dotenv
 import os
 
 import crud
-from schemas import FormsCV
-from pdf_coversion import save_bytes_as_pdf,get_bytes_from_pdf
+from forms_schema import FormsCV
+from shared.pdf_coversion import save_bytes_as_pdf,get_bytes_from_pdf
 
 waiting = 'waiting'
 sent = 'sent'

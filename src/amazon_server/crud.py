@@ -1,7 +1,10 @@
+from typing import List
+
 from sqlmodel import Session, create_engine, SQLModel,select,col,update,delete
 import os
 from dotenv import load_dotenv
-from schemas import BaseCV,Statuses,DatabaseCV
+from shared.base_schemas import BaseCV
+from shared.base_schemas import Statuses,DatabaseCV
 
 load_dotenv()
 DATABASE_NAME = os.getenv("DATABASE")
@@ -40,7 +43,7 @@ def add_forms(cv: BaseCV) -> DatabaseCV:
         return db_cv
 
 
-def change_from_to(current_status: str, desired_status: str):
+def change_from_to(current_status: str, desired_status: str,cv_ids: List[int] | None = None):
     with Session(engine, expire_on_commit=False) as session:
         current_status_statement = select(Statuses).where(Statuses.status == current_status)
         current_status_id = session.exec(current_status_statement).first().id
@@ -49,6 +52,9 @@ def change_from_to(current_status: str, desired_status: str):
         desired_status_id = session.exec(desired_status_statement).first().id
 
         statement = select(DatabaseCV).join(Statuses).where(Statuses.id == current_status_id)
+        if cv_ids:
+            statement = statement.where(DatabaseCV.id.in_(cv_ids))
+
         data = session.exec(statement).all()
 
         response_data = []
@@ -57,6 +63,9 @@ def change_from_to(current_status: str, desired_status: str):
             response_data.append(cv_dict)
 
         statement_changing = update(DatabaseCV).where(DatabaseCV.status == current_status_id).values(status = desired_status_id)
+        if cv_ids:
+            statement_changing = statement_changing.where(DatabaseCV.id.in_(cv_ids))
+
         session.exec(statement_changing)
         session.commit()
         return response_data
