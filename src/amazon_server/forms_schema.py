@@ -16,3 +16,7 @@ AcceptedUrl: TypeAlias = Annotated[AnyUrl, AfterValidator(check_specific_hosts)]
 class FormsCV(BaseCV):
     email: EmailStr
     github_link: AcceptedUrl | None = None
+
+
+class StatusChangeList(BaseModel):
+    cv_ids: List[int]|None

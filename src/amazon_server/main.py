@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 import os
 
 import crud
-from forms_schema import FormsCV
+from forms_schema import FormsCV, StatusChangeList
 from shared.pdf_coversion import save_bytes_as_pdf,get_bytes_from_pdf
 
 waiting = 'waiting'
@@ -54,8 +54,8 @@ def upload_forms_data(cv: FormsCV, key: str = Depends(key_validation)):
 
 
 @app.get("/send-waiting-cv")
-def send_waiting_cv(key: str = Depends(key_validation)):
-    data = crud.change_from_to(waiting,sent)
+def send_waiting_cv(ids: StatusChangeList, key: str = Depends(key_validation)):
+    data = crud.change_from_to(waiting,sent, cv_ids=ids.cv_ids)
     for cv_dict in data:
         path = cv_dict["cv"]
         pdf_b64 = get_bytes_from_pdf(path)
@@ -68,22 +68,22 @@ def send_waiting_cv(key: str = Depends(key_validation)):
 
 
 @app.post("/change-waiting")
-def change_set_to_waiting(key: str = Depends(key_validation)):
-    crud.change_from_to(sent,waiting)
+def change_set_to_waiting(ids: StatusChangeList,key: str = Depends(key_validation)):
+    crud.change_from_to(sent,waiting, cv_ids=ids.cv_ids)
     print("Changed CVs to waiting.")
     return {"response": "Successfully changed sent CVs to waiting"}
 
 
 @app.post("/change-pending")
-def change_to_pending(key: str = Depends(key_validation)):
-    crud.change_from_to(sent,pending)
+def change_to_pending(ids: StatusChangeList,key: str = Depends(key_validation)):
+    crud.change_from_to(sent,pending, cv_ids=ids.cv_ids)
     print("Changed CVs to pending.")
     return {"response": "Successfully changed sent CVs to pending"}
 
 
 @app.post("/change-finished")
-def change_to_finished(key: str = Depends(key_validation)):
-    crud.change_from_to(pending,finished)
+def change_to_finished(ids: StatusChangeList, key: str = Depends(key_validation)):
+    crud.change_from_to(pending,finished, cv_ids=ids.cv_ids)
     print("Changed CVs to finished.")
     return {"response": "Successfully changed sent CVs to finished"}
 
