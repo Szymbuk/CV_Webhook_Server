@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 import os
 
 import amazon_server.crud as crud
-from forms_schema import FormsCV, StatusChangeList
+from amazon_server.forms_schema import FormsCV, StatusChangeList
 from shared.pdf_coversion import save_bytes_as_pdf,get_bytes_from_pdf
 
 waiting = 'waiting'
