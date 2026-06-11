@@ -54,8 +54,8 @@ def upload_forms_data(cv: FormsCV, key: str = Depends(key_validation)):
 
 
 @app.get("/send-waiting-cv")
-def send_waiting_cv(ids: StatusChangeList, key: str = Depends(key_validation)):
-    data = crud.change_from_to(waiting,sent, cv_ids=ids.cv_ids)
+def send_waiting_cv( key: str = Depends(key_validation)):
+    data = crud.change_from_to(waiting,sent)
     for cv_dict in data:
         path = cv_dict["cv"]
         pdf_b64 = get_bytes_from_pdf(path)
