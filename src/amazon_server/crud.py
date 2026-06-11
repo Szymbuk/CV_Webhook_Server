@@ -167,7 +167,13 @@ def change_from_to(current_status: str, desired_status: str):
         session.exec(statement_changing)
 
         session.commit()
-        return data_before_update
+
+        response_data = []
+
+        for cv in data_before_update:
+            cv_dict = cv.model_dump()
+            response_data.append(cv_dict)
+        return response_data
 
 
 def delete_finished():

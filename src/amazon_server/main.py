@@ -93,10 +93,10 @@ def upload_forms_data(cv: BaseCV, key: str = Depends(key_validation)):
 @app.get("/send-waiting-cv")
 def send_waiting_cv(key: str = Depends(key_validation)):
     data = crud.change_from_to(waiting,sent)
-    for cv in data:
-        path = cv.cv
+    for cv_dict in data:
+        path = cv_dict["cv"]
         pdf_b64 = get_bytes_from_pdf(path)
-        cv.cv = pdf_b64
+        cv_dict["cv"] = pdf_b64
     print(data)
     if not data:
         return {"response": "no CV found"}
