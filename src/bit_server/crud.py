@@ -1,10 +1,8 @@
-from typing import List
-
 from sqlmodel import Session, create_engine, SQLModel,select,col,update,delete
 import os
 from dotenv import load_dotenv
-from shared.base_schemas import BaseCV
-from shared.base_schemas import Statuses,DatabaseCV
+from shared.base_schemas import BaseCV,Statuses,DatabaseCV
+from typing import List
 
 load_dotenv()
 DATABASE_NAME = os.getenv("DATABASE")
@@ -18,23 +16,19 @@ def create_tables():
         existing_status = session.exec(select(Statuses)).first()
         if not existing_status:
             s1 = Statuses(status='waiting')
-            s3 = Statuses(status='pending')
-            s4 = Statuses(status='finished')
-            session.add_all([s1,s2,s3,s4])
+            s2 = Statuses(status='pending')
+            s3 = Statuses(status='finished')
+            session.add_all([s1,s2,s3])
             session.commit()
         return "Successfully created tables"
 
 
-def add_forms(cv: BaseCV) -> DatabaseCV:
+def add_to_db(cv: BaseCV) -> DatabaseCV:
     with Session(engine) as session:
         waiting_statement = select(Statuses).where(Statuses.status=='waiting')
         waiting_id = session.exec(waiting_statement).first().id
-        cv_data = cv.model_dump()
 
-        if cv.github_link:
-            cv_data["github_link"] = str(cv.github_link)
-
-        db_cv = DatabaseCV.model_validate(cv_data)
+        db_cv = DatabaseCV.model_validate(cv)
         db_cv.status= waiting_id
         session.add(db_cv)
         session.commit()
@@ -68,6 +62,7 @@ def change_from_to(current_status: str, desired_status: str,cv_ids: List[int] | 
         session.exec(statement_changing)
         session.commit()
         return response_data
+
 
 
 def delete_finished():
