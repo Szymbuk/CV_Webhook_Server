@@ -1,103 +1,90 @@
-import sqlite3
-import database
+from typing import List
 
-def add_row(email,cv_name,cv_file):
-    try:
-        conn = database.get_connection()
-        cursor = conn.cursor()
-        cursor.execute(
-                    '''
-                    INSERT INTO CV (email,cv_name,cv_file,status_id)
-                    VALUES (?,?,?,(SELECT id FROM Statuses WHERE status = 'waiting'))
-                    ''', (email,cv_name,cv_file)
-                       )
-        conn.commit()
+from sqlmodel import Session, create_engine, SQLModel,select,col,update,delete
+import os
+from dotenv import load_dotenv
+from shared.base_schemas import BaseCV
+from shared.base_schemas import Statuses,DatabaseCV
 
-    except sqlite3.Error as e:
-        print(f"Database error {e}")
-        raise e
-    finally:
-        if conn:
-            conn.close()
+load_dotenv()
+DATABASE_NAME = os.getenv("DATABASE")
+sqlite_url = f"sqlite:///{DATABASE_NAME}"
+engine = create_engine(sqlite_url)
+
+
+def create_tables():
+    SQLModel.metadata.create_all(engine)
+    with Session(engine) as session:
+        existing_status = session.exec(select(Statuses)).first()
+        if not existing_status:
+            s1 = Statuses(status='waiting')
+            s3 = Statuses(status='pending')
+            s4 = Statuses(status='finished')
+            session.add_all([s1,s2,s3,s4])
+            session.commit()
+        return "Successfully created tables"
+
+
+def add_forms(cv: BaseCV) -> DatabaseCV:
+    with Session(engine) as session:
+        waiting_statement = select(Statuses).where(Statuses.status=='waiting')
+        waiting_id = session.exec(waiting_statement).first().id
+        cv_data = cv.model_dump()
+
+        if cv.github_link:
+            cv_data["github_link"] = str(cv.github_link)
+
+        db_cv = DatabaseCV.model_validate(cv_data)
+        db_cv.status= waiting_id
+        session.add(db_cv)
+        session.commit()
+        session.refresh(db_cv)
+        return db_cv
+
+
+def change_from_to(current_status: str, desired_status: str,cv_ids: List[int] | None = None):
+    with Session(engine, expire_on_commit=False) as session:
+        current_status_statement = select(Statuses).where(Statuses.status == current_status)
+        current_status_id = session.exec(current_status_statement).first().id
+
+        desired_status_statement = select(Statuses).where(Statuses.status == desired_status)
+        desired_status_id = session.exec(desired_status_statement).first().id
+
+        statement = select(DatabaseCV).join(Statuses).where(Statuses.id == current_status_id)
+        if cv_ids:
+            statement = statement.where(DatabaseCV.id.in_(cv_ids))
+
+        data = session.exec(statement).all()
+
+        response_data = []
+        for cv in data:
+            cv_dict = cv.model_dump()
+            response_data.append(cv_dict)
+
+        statement_changing = update(DatabaseCV).where(DatabaseCV.status == current_status_id).values(status = desired_status_id)
+        if cv_ids:
+            statement_changing = statement_changing.where(DatabaseCV.id.in_(cv_ids))
+
+        session.exec(statement_changing)
+        session.commit()
+        return response_data
+
+
+def delete_finished():
+    with Session(engine) as session:
+        finished_status_statement = select(Statuses).where(Statuses.status == "finished")
+        finished_status_id = session.exec(finished_status_statement).first().id
+
+
+        statement_changing = delete(DatabaseCV).where(DatabaseCV.status == finished_status_id)
+        session.exec(statement_changing)
+        session.commit()
 
 
 def read_database():
-    try:
-        conn = database.get_connection()
-        cursor = conn.cursor()
-        cursor.execute('''
-                       SELECT CV.id, email, cv_name, status FROM CV 
-                        INNER JOIN Statuses
-                        on CV.status_id = Statuses.id
-                       ''')
-        data = [dict(row)  for row in cursor.fetchall()]
-        print(f"Database records: {data}")
-    except sqlite3.Error as e:
-        print(f"Database error {e}")
-        raise e
-    finally:
-        if conn:
-            conn.close()
-    return data
+    with Session(engine) as session:
+        statement = select(DatabaseCV,Statuses).join(Statuses)
+        data = session.exec(statement).all()
+        formatted_data = [{"cv": cv, "status": status} for cv, status in data]
 
-
-def give_waiting():
-    try:
-        conn = database.get_connection()
-        cursor = conn.cursor()
-
-        cursor.execute('''
-                       SELECT * FROM CV 
-                        INNER JOIN statuses
-                        on CV.status_id = Statuses.id
-                        WHERE Statuses.status = 'waiting'
-                       ''')
-        data = [dict(row)  for row in cursor.fetchall()]
-        cursor.execute('''
-                        UPDATE CV
-                        SET status_id = (SELECT id FROM Statuses WHERE status = 'sent')
-                        where status_id = (SELECT id FROM Statuses WHERE status = 'waiting')
-        ''')
-        conn.commit()
-    except sqlite3.Error as e:
-        print(f"Database error{e}")
-        raise e
-    finally:
-        if conn:
-            conn.close()
-    print(data)
-    return data
-
-
-def delete_sent():
-    try:
-        conn = database.get_connection()
-        cursor = conn.cursor()
-        cursor.execute('''
-                        DELETE FROM CV
-                        WHERE status_id = (SELECT id FROM Statuses WHERE status = 'sent')                    
-        ''')
-        conn.commit()
-    except sqlite3.Error as e:
-        print(f"Database error{e}")
-        raise e
-    finally:
-        if conn:
-            conn.close()
-
-def change_to_waiting():
-    try:
-        conn = database.get_connection()
-        cursor = conn.cursor()
-        cursor.execute('''
-                        UPDATE CV
-                        SET status_id = (SELECT id FROM Statuses WHERE status = 'waiting')
-                        where status_id = (SELECT id FROM Statuses WHERE status = 'set')
-        ''')
-        conn.commit()
-    except sqlite3.Error as e:
-        print(f"Database error{e}")
-        raise e
-    finally:
-        if conn:
-            conn.close()
+        return formatted_data

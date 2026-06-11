@@ -1,6 +1,5 @@
 from pydantic import BaseModel,EmailStr, AfterValidator, AnyUrl
 from typing import Annotated, TypeAlias,List
-from sqlmodel import SQLModel, Field,Relationship
 from shared.base_schemas import BaseCV
 
 
