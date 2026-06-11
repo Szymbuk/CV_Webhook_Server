@@ -27,8 +27,12 @@ def add_forms(cv: BaseCV) -> DatabaseCV:
     with Session(engine) as session:
         waiting_statement = select(Statuses).where(Statuses.status=='waiting')
         waiting_id = session.exec(waiting_statement).first().id
+        cv_data = cv.model_dump()
 
-        db_cv = DatabaseCV.model_validate(cv)
+        if cv.github_link:
+            cv_data["github_link"] = str(cv.github_link)
+
+        db_cv = DatabaseCV.model_validate(cv_data)
         db_cv.status= waiting_id
         session.add(db_cv)
         session.commit()
