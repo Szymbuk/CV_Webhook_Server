@@ -4,7 +4,7 @@ from sqlmodel import SQLModel, Field,Relationship
 
 
 def check_specific_hosts(url: AnyUrl) -> AnyUrl | None:
-    valid_hosts = {"www.github.com"}
+    valid_hosts = {"www.github.com", "github.com"}
     if url.host in valid_hosts:
         return url
     return None
