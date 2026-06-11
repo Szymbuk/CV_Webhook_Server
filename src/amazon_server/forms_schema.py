@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, AfterValidator, AnyUrl, field_validator
+from pydantic import BaseModel, EmailStr, AfterValidator, AnyUrl, field_validator, ConfigDict
 from typing import Annotated, TypeAlias,List
 from shared.base_schemas import BaseCV
 
@@ -13,6 +13,8 @@ AcceptedUrl: TypeAlias = Annotated[AnyUrl, AfterValidator(check_specific_hosts)]
 
 
 class FormsCV(BaseCV):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
     email: EmailStr
     github_link: AcceptedUrl | None = None
 
