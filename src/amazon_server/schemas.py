@@ -1,7 +1,6 @@
 from pydantic import BaseModel,EmailStr, AfterValidator, AnyUrl
 from typing import Annotated, TypeAlias,List
-
-
+from sqlmodel import SQLModel, Field,Relationship
 
 
 def check_specific_hosts(url: AnyUrl) -> AnyUrl | None:
@@ -10,17 +9,7 @@ def check_specific_hosts(url: AnyUrl) -> AnyUrl | None:
         return url
     return None
 
-
 AcceptedUrl: TypeAlias = Annotated[AnyUrl, AfterValidator(check_specific_hosts)]
-
-
-class FormsCV(BaseModel):
-    email: EmailStr
-    cv_name: str
-    cv_content: str
-
-
-from sqlmodel import SQLModel, Field,Relationship
 
 
 class Statuses(SQLModel, table=True):
@@ -45,7 +34,7 @@ class DatabaseCV(BaseCV, table=True):
 
     statuses: Statuses = Relationship(back_populates="cvs")
 
-class NewFormsCV(BaseCV):
+
+class FormsCV(BaseCV):
     email: EmailStr
     github_link: AcceptedUrl | None = None
-
