@@ -24,8 +24,9 @@ services:
     command:
       - "http"
       - "fastapi:8000"
+      - "--domain=${NGROK_DOMAIN}"
+      - "--basic-auth=${NGROK_BASIC_AUTH}"
     environment:
       NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
-      NGROK_BASIC_AUTH: ${NGROK_BASIC_AUTH}  # Logowanie dla Power Automate
     depends_on:
       - fastapi
