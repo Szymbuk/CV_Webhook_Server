@@ -1,6 +1,6 @@
 from typing import List
 
-from sqlmodel import Session, create_engine, SQLModel,select,col,update,delete
+from sqlmodel import Session, create_engine, SQLModel, select, col, update, delete
 import os
 from dotenv import load_dotenv
 from shared.base_schemas import BaseCV
@@ -10,6 +10,15 @@ load_dotenv()
 DATABASE_NAME = os.getenv("DATABASE")
 sqlite_url = f"sqlite:///{DATABASE_NAME}"
 engine = create_engine(sqlite_url)
+
+
+def _get_status_id(session: Session, status_name: str) -> int:
+    status = session.exec(
+        select(Statuses).where(Statuses.status == status_name)
+    ).first()
+    if status is None or status.id is None:
+        raise LookupError(f"Status '{status_name}' was not found")
+    return status.id
 
 
 def create_tables():
@@ -28,8 +37,7 @@ def create_tables():
 
 def add_forms(cv: BaseCV) -> DatabaseCV:
     with Session(engine) as session:
-        waiting_statement = select(Statuses).where(Statuses.status=='waiting')
-        waiting_id = session.exec(waiting_statement).first().id
+        waiting_id = _get_status_id(session, "waiting")
         cv_data = cv.model_dump()
 
         if cv.github_link:
@@ -45,15 +53,14 @@ def add_forms(cv: BaseCV) -> DatabaseCV:
 
 def change_from_to(current_status: str, desired_status: str,cv_ids: List[int] | None = None):
     with Session(engine, expire_on_commit=False) as session:
-        current_status_statement = select(Statuses).where(Statuses.status == current_status)
-        current_status_id = session.exec(current_status_statement).first().id
+        current_status_id = _get_status_id(session, current_status)
+        desired_status_id = _get_status_id(session, desired_status)
 
-        desired_status_statement = select(Statuses).where(Statuses.status == desired_status)
-        desired_status_id = session.exec(desired_status_statement).first().id
-
-        statement = select(DatabaseCV).join(Statuses).where(Statuses.id == current_status_id)
+        statement = select(DatabaseCV).join(Statuses).where(
+            col(Statuses.id) == current_status_id
+        )
         if cv_ids:
-            statement = statement.where(DatabaseCV.id.in_(cv_ids))
+            statement = statement.where(col(DatabaseCV.id).in_(cv_ids))
 
         data = session.exec(statement).all()
 
@@ -62,9 +69,11 @@ def change_from_to(current_status: str, desired_status: str,cv_ids: List[int] | 
             cv_dict = cv.model_dump()
             response_data.append(cv_dict)
 
-        statement_changing = update(DatabaseCV).where(DatabaseCV.status == current_status_id).values(status = desired_status_id)
+        statement_changing = update(DatabaseCV).where(
+            col(DatabaseCV.status) == current_status_id
+        ).values(status=desired_status_id)
         if cv_ids:
-            statement_changing = statement_changing.where(DatabaseCV.id.in_(cv_ids))
+            statement_changing = statement_changing.where(col(DatabaseCV.id).in_(cv_ids))
 
         session.exec(statement_changing)
         session.commit()
@@ -73,11 +82,11 @@ def change_from_to(current_status: str, desired_status: str,cv_ids: List[int] | 
 
 def delete_finished():
     with Session(engine) as session:
-        finished_status_statement = select(Statuses).where(Statuses.status == "finished")
-        finished_status_id = session.exec(finished_status_statement).first().id
+        finished_status_id = _get_status_id(session, "finished")
 
-
-        statement_changing = delete(DatabaseCV).where(DatabaseCV.status == finished_status_id)
+        statement_changing = delete(DatabaseCV).where(
+            col(DatabaseCV.status) == finished_status_id
+        )
         session.exec(statement_changing)
         session.commit()
 

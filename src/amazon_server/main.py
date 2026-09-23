@@ -32,20 +32,20 @@ API_KEY = os.getenv("API_KEY")
 CV_DIRECTORY = os.getenv("CV_DIRECTORY")
 
 
-def key_validation_debug(api_key: str = Header("API-Key")):
+def key_validation_debug(api_key: str = Header(alias="API-Key")) -> str:
     if api_key != API_KEY_DEBUG:
         raise HTTPException(status_code=401,detail= "Incorrect API key.")
     return api_key
 
 
-def key_validation(api_key: str = Header("API-Key")):
+def key_validation(api_key: str = Header(alias="API-Key")) -> str:
     if api_key != API_KEY:
         raise HTTPException(status_code=401,detail= "Incorrect API key.")
     return api_key
 
 
-@app.post("/webhook")
-def upload_forms_data(cv: FormsCV, key: str = Depends(key_validation)):
+@app.post("/webhook", dependencies=[Depends(key_validation)])
+def upload_forms_data(cv: FormsCV):
     path = save_bytes_as_pdf(CV_DIRECTORY,cv.cv,cv.cv_name)
     cv.cv = path
     crud.add_forms(cv)
@@ -53,8 +53,8 @@ def upload_forms_data(cv: FormsCV, key: str = Depends(key_validation)):
     return {"response": "Successfully added cv to database"}
 
 
-@app.get("/send-waiting-cv")
-def send_waiting_cv( key: str = Depends(key_validation)):
+@app.get("/send-waiting-cv", dependencies=[Depends(key_validation)])
+def send_waiting_cv():
     data = crud.change_from_to(waiting,sent)
     for cv_dict in data:
         path = cv_dict["cv"]
@@ -67,36 +67,36 @@ def send_waiting_cv( key: str = Depends(key_validation)):
     return data
 
 
-@app.post("/change-waiting")
-def change_set_to_waiting(ids: StatusChangeList,key: str = Depends(key_validation)):
+@app.post("/change-waiting", dependencies=[Depends(key_validation)])
+def change_set_to_waiting(ids: StatusChangeList):
     crud.change_from_to(sent,waiting, cv_ids=ids.cv_ids)
     print("Changed CVs to waiting.")
     return {"response": "Successfully changed sent CVs to waiting"}
 
 
-@app.post("/change-pending")
-def change_to_pending(ids: StatusChangeList,key: str = Depends(key_validation)):
+@app.post("/change-pending", dependencies=[Depends(key_validation)])
+def change_to_pending(ids: StatusChangeList):
     crud.change_from_to(sent,pending, cv_ids=ids.cv_ids)
     print("Changed CVs to pending.")
     return {"response": "Successfully changed sent CVs to pending"}
 
 
-@app.post("/change-finished")
-def change_to_finished(ids: StatusChangeList, key: str = Depends(key_validation)):
+@app.post("/change-finished", dependencies=[Depends(key_validation)])
+def change_to_finished(ids: StatusChangeList):
     crud.change_from_to(pending,finished, cv_ids=ids.cv_ids)
     print("Changed CVs to finished.")
     return {"response": "Successfully changed sent CVs to finished"}
 
 
-@app.post("/delete-finished")
-def delete_finished(key: str = Depends(key_validation)):
+@app.post("/delete-finished", dependencies=[Depends(key_validation)])
+def delete_finished():
     crud.delete_finished()
     print("Deleted finished CVs.")
     return {"response": "Successfully deleted finished CVs"}
 
 
-@app.get("/print-data_new")
-def print_database(key: str = Depends(key_validation_debug)):
+@app.get("/print-data_new", dependencies=[Depends(key_validation_debug)])
+def print_database():
     data = crud.read_database()
     print(f"Database records:\n {data}")
     return data
