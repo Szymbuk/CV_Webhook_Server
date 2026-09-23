@@ -11,11 +11,13 @@ load_dotenv()
 EC2_URL = os.getenv("EC2_URL")
 API_KEY = os.getenv("API_KEY")
 CV_DIRECTORY = os.getenv("CV_DIRECTORY")
+USER = os.getenv("NGROK_BASIC_AUTH").split(":")[0]
+PASSWORD = os.getenv("NGROK_BASIC_AUTH").split(":")[1]
 
 
 def fetch_waiting_cv():
     headers = {"API-Key":API_KEY}
-    result = requests.get(f"{EC2_URL}send-waiting-cv",headers=headers)
+    result = requests.get(f"{EC2_URL}/send-waiting-cv",headers=headers,auth = (USER, PASSWORD))
     if result.status_code == 200:
         data = result.json()
         if data == {"response": "no CV found"}:

@@ -4,29 +4,16 @@ services:
     build:
       context: ../..
       dockerfile: deploy/bit/Dockerfile
-    command: uvicorn bit.main:app --host 0.0.0.0 --port 8000
-    ports:
-      - "8000:8000"
+    command: python -m bit.main
     environment:
       API_KEY: ${API_KEY}
       API_KEY_DEBUG: ${API_KEY_DEBUG}
       DATABASE: ${DATABASE}
       CV_DIRECTORY: ${CV_DIRECTORY}
+      EC2_URL: ${EC2_URL}
+      NGROK_BASIC_AUTH: ${NGROK_BASIC_AUTH}
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
     volumes:
       - ../../cv_files/bit:/app/cv_files
       - ../../data/bit:/app/data
     restart: unless-stopped
-
-  # Drugi kontener, który automatycznie tuneluje i zabezpiecza FastAPI
-  ngrok:
-    image: ngrok/ngrok:3.8
-    restart: unless-stopped
-    command:
-      - "http"
-      - "fastapi:8000"
-      - "--url=${NGROK_DOMAIN}"
-      - "--basic-auth=${NGROK_BASIC_AUTH}"
-    environment:
-      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
-    depends_on:
-      - fastapi
