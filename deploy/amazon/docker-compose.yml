@@ -19,12 +19,12 @@ services:
 
   # Drugi kontener, który automatycznie tuneluje i zabezpiecza FastAPI
   ngrok:
-    image: ngrok/ngrok:latest
+    image: ngrok/ngrok:3.8
     restart: unless-stopped
     command:
       - "http"
       - "fastapi:8000"
-      - "--domain=${NGROK_DOMAIN}"
+      - "--url=${NGROK_DOMAIN}"
       - "--basic-auth=${NGROK_BASIC_AUTH}"
     environment:
       NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
