@@ -24,7 +24,7 @@ services:
     command:
       - "http"
       - "fastapi:8000"
-      - "--url=${NGROK_DOMAIN}"
+      - "--url=${EC2_URL}"
       - "--basic-auth=${NGROK_BASIC_AUTH}"
     environment:
       NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
