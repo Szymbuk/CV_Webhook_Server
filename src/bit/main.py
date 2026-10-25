@@ -11,10 +11,14 @@ load_dotenv()
 EC2_URL = os.getenv("EC2_URL")
 API_KEY = os.getenv("API_KEY")
 CV_DIRECTORY = os.getenv("CV_DIRECTORY")
-USER = os.getenv("NGROK_BASIC_AUTH").split(":")[0]
-PASSWORD = os.getenv("NGROK_BASIC_AUTH").split(":")[1]
+USER_AND_PASSWORD = os.getenv("NGROK_BASIC_AUTH")
+if USER_AND_PASSWORD:
+    USER, PASSWORD = USER_AND_PASSWORD.split(":")
+else:
+    RuntimeError("NGROK_BASIC_AUTH environment variable is not set or is invalid. It should be in the format 'username:password'.")
 
 
+#TODO poprawić ścieżki, dopisać testy
 def fetch_waiting_cv():
     headers = {"API-Key":API_KEY}
     result = requests.get(f"{EC2_URL}/send-waiting-cv",headers=headers,auth = (USER, PASSWORD))
@@ -28,8 +32,8 @@ def fetch_waiting_cv():
         failed_ids = []
         
         for cv in data:
+            amazon_id = cv.pop("id")
             try:
-                amazon_id = cv.pop("id")
                 cv.pop("status")
                 cv = BaseCV.model_validate(cv)
                 
@@ -43,10 +47,10 @@ def fetch_waiting_cv():
                 failed_ids.append(amazon_id)
         if successful_ids:
             print(f"Successfully added CVs with ids: {successful_ids}",end="\t")
-            requests.post(f"{EC2_URL}change-pending", json={"cv_ids": successful_ids}, headers=headers)
+            requests.post(f"{EC2_URL}/change-pending", json={"cv_ids": successful_ids}, headers=headers)
         if failed_ids:
             print(f"Failed to add CVs with ids: {failed_ids}",end="\t")    
-            requests.post(f"{EC2_URL}change-waiting", json={"cv_ids": failed_ids}, headers=headers)
+            requests.post(f"{EC2_URL}/change-waiting", json={"cv_ids": failed_ids}, headers=headers)
     else:
         print(f"Failed to connect to the server: {result.status_code}",end="\t")
 
