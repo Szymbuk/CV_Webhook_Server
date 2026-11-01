@@ -18,10 +18,9 @@ else:
     RuntimeError("NGROK_BASIC_AUTH environment variable is not set or is invalid. It should be in the format 'username:password'.")
 
 
-#TODO poprawić ścieżki, dopisać testy
 def fetch_waiting_cv():
     headers = {"API-Key":API_KEY}
-    result = requests.get(f"{EC2_URL}/send-waiting-cv",headers=headers,auth = (USER, PASSWORD))
+    result = requests.get(f"{EC2_URL}/send-waiting-cv",headers=headers,auth = (USER, PASSWORD)) # type: ignore
     if result.status_code == 200:
         data = result.json()
         if data == {"response": "no CV found"}:
@@ -47,10 +46,10 @@ def fetch_waiting_cv():
                 failed_ids.append(amazon_id)
         if successful_ids:
             print(f"Successfully added CVs with ids: {successful_ids}",end="\t")
-            requests.post(f"{EC2_URL}/change-pending", json={"cv_ids": successful_ids}, headers=headers)
+            requests.post(f"{EC2_URL}/change-pending", json={"cv_ids": successful_ids}, headers=headers)# type: ignore
         if failed_ids:
             print(f"Failed to add CVs with ids: {failed_ids}",end="\t")    
-            requests.post(f"{EC2_URL}/change-waiting", json={"cv_ids": failed_ids}, headers=headers)
+            requests.post(f"{EC2_URL}/change-waiting", json={"cv_ids": failed_ids}, headers=headers)# type: ignore
     else:
         print(f"Failed to connect to the server: {result.status_code}",end="\t")
 
