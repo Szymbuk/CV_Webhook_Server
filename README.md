@@ -10,7 +10,6 @@ The project utilizes a clean **multi-tenant / multi-pipeline architecture**, all
 
 * **⚡ Webhook Ingestion:** The Amazon service receives the form payload forwarded by Power Automate through a protected FastAPI webhook.
 * **🏢 Multi-Role Architecture:** The `amazon` service receives and stores CVs, while the `bit` service polls the Amazon service over HTTP and saves copies locally.
-* **📑 Automated Document Processing:** Downloads and processes uploaded resumes, including automated **PDF-to-image conversion** (`pdf2image` / `Pillow`) for downstream previewing or OCR/AI processing.
 * **🛡️ Strict Data Validation:** Leverages **Pydantic** (`base_schemas.py`, `forms_schema.py`) to validate complex, nested webhook payloads before executing CRUD operations.
 * **🐳 Isolated Docker Deployments:** Dedicated `Dockerfile` and `docker-compose.yml` configurations per pipeline (`deploy/amazon` and `deploy/bit`) with persistent volume mounting for CVs and structured data.
 * **📦 Modern Python Tooling:** Managed with **`uv`** (`pyproject.toml` & `uv.lock`) and supporting Python 3.12+ (the Docker images currently use Python 3.13).
@@ -157,6 +156,5 @@ to view its interactive Swagger UI documentation.
 
 * **Framework:** FastAPI, Uvicorn
 * **Data Validation:** Pydantic, `email-validator`
-* **Document & Image Processing:** `pdf2image`, Pillow (PIL)
 * **HTTP Client:** Requests
 * **Environment & Packaging:** Python 3.12+, `uv`, Docker & Docker Compose
